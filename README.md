@@ -64,7 +64,9 @@ docker compose up -d
 ## 4. Run profile_malloc gadget
 
 ```bash
-sudo ig run profile_malloc --otel-profiles-exporter=my-profiles-exporter --config=./ig/config.yaml --verify-image=false --host
+sudo ig run profile_malloc --verify-image=false --config=./ig/config.yaml \
+--otel-profiles-exporter=my-profiles-exporter \
+--collect-ustack=true --host
 ```
 
 ## 5. Run a GPU workload

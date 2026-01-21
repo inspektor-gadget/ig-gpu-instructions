@@ -58,7 +58,7 @@ docker compose up -d
 
 ## 3. Build ig and profile_malloc gadget
 
-- Build IG from `mauricio/profile-memory` branch
+- Build IG from `mauricio/profile-cuda` branch
 - Build the `profile_malloc` gadget from the same branch
 
 ## 4. Run profile_malloc gadget

@@ -1,6 +1,6 @@
 # IG + GPU PoC Instructions
 
-This guide constains the instructions to test the Advanced GPU observability
+This guide contains the instructions to test the Advanced GPU observability
 PoC.
 
 ## 0. Get a machine with a GPU
@@ -45,14 +45,15 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-## 2. Run Pyroscope and & Grafana
+## 2. Run Pyroscope, Grafana and Prometheus
 
-The `pyroscope` folder contains a `docker-compose.yaml` file that will run both
-Pyroscope and Grafana with the necessary configurations to show the profiles on
-Grafana.
+The `observability` folder contains a `docker-compose.yaml` file that will run
+Pyroscope, Prometheus, and Grafana with the necessary configurations to show the
+profiles and metrics on Grafana. Prometheus is configured to scrape metrics from
+IG on port 2224.
 
 ```bash
-cd pyroscope/docker
+cd observability/docker
 docker compose up -d
 ```
 
@@ -63,11 +64,24 @@ docker compose up -d
 
 ## 4. Run profile_malloc gadget
 
+Run the profile_malloc gadget for profiling:
+
 ```bash
 sudo ig run profile_malloc --verify-image=false --config=./ig/config.yaml \
 --otel-profiles-exporter=my-profiles-exporter \
 --collect-ustack=true --host
 ```
+
+Run the profile_malloc gadget separately for metrics:
+
+```bash
+sudo ig run profile_malloc --verify-image=false \
+--otel-metrics-listen=true --otel-metrics-name=DS1:foo,DS2:bar
+```
+
+This will:
+- Export profile data to Pyroscope via OTLP
+- Expose metrics on port 2224 for Prometheus to scrape
 
 ## 5. Run a GPU workload
 
@@ -81,12 +95,14 @@ ollama run gemma3
 
 ## 6. Check Pyroscope / Grafana
 
-Open your browser and go to
-`http://<VM_IP>:3000/a/grafana-pyroscope-app/explore` to access the profiling data.
+Open your browser to access:
+- **Profiles**: `http://<VM_IP>:3000/a/grafana-pyroscope-app/explore` to view profiling data
+- **Metrics**: `http://<VM_IP>:3000/explore` to view metrics from Prometheus
+- **Prometheus**: `http://<VM_IP>:9090` to access Prometheus UI directly
 
 NOTE: If you don't have direct access to the VM IP, you can create an SSH tunnel
 with:
 
 ```bash
-ssh -L 3000:localhost:3000 <user>@<VM_IP>
+ssh -L 3000:localhost:3000 -L 9090:localhost:9090 <user>@<VM_IP>
 ```

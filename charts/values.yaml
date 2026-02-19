@@ -1,0 +1,46 @@
+inspektor-gadget:
+  # Only deploy on nodes with GPU.
+  nodeSelector:
+    accelerator: "nvidia"
+  config:
+    gadgetNamespace: gpu-observability
+    daemonLogLevel: debug
+    operator:
+      otel-profiles:
+        exporters:
+          my-profiles-exporter:
+            exporter: otlp-grpc
+            compression: gzip
+            endpoint: gpu-observability-pyroscope.gpu-observability.svc.cluster.local:4040
+            insecure: true
+pyroscope:
+  service:
+    port: 4040
+  alloy:
+    enabled: false
+  pyroscope:
+    # The image must be set here and not in upper level. Otherwise, 1.14.0 would
+    # be used and communication would not occur.
+    # Thanks Mauricio for spotting this!
+    image:
+      repository: grafana/pyroscope
+      tag: "1.15.0"
+    structuredConfig:
+      self_profiling:
+        disable_push: true
+grafana:
+  env:
+    GF_INSTALL_PLUGINS: grafana-pyroscope-app
+    GF_AUTH_ANONYMOUS_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    GF_AUTH_DISABLE_LOGIN_FORM: "true"
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - uid: local-pyroscope
+          type: grafana-pyroscope-datasource
+          name: Pyroscope
+          url: http://gpu-observability-pyroscope.gpu-observability.svc.cluster.local:4040
+          jsonData:
+            keepCookies: [pyroscope_git_session]

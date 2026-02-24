@@ -1,24 +1,47 @@
 inspektor-gadget:
-  # Only deploy on nodes with GPU.
-  nodeSelector:
-    accelerator: "nvidia"
   config:
-    gadgetNamespace: gpu-observability
     daemonLogLevel: debug
+    gadgetNamespace: gpu-observability
     operator:
       otel-profiles:
         exporters:
           my-profiles-exporter:
             exporter: otlp-grpc
             compression: gzip
-            endpoint: gpu-observability-pyroscope.gpu-observability.svc.cluster.local:4040
+            endpoint: gpu-observability-pyroscope-distributor.gpu-observability.svc.cluster.local:4040
             insecure: true
+  nodeSelector:
+    # Only deploy on nodes with GPU.
+    accelerator: "nvidia"
 pyroscope:
-  service:
-    port: 4040
   alloy:
     enabled: false
+  architecture:
+    microservices:
+      enabled: true
+    # Better than v1 for scaling.
+    storage:
+      v2: true
+  minio:
+    enabled: false
   pyroscope:
+    # Other components are defined in value-micro-services.yaml taken from:
+    # https://github.com/grafana/pyroscope/blob/318871de4599/operations/pyroscope/helm/pyroscope/values-micro-services.yaml
+    # Having split components helps scaling.
+    components:
+      ad-hoc-profiles:
+        # We only want to profile using Inspektor Gadget.
+        replicaCount: 0
+      querier:
+        # We only have one node for now.
+        replicaCount: 1
+      query-frontend:
+        replicaCount: 1
+      query-scheduler:
+        replicaCount: 1
+      tenant-settings:
+        # I do not think we need this.
+        replicaCount: 0
     # The image must be set here and not in upper level. Otherwise, 1.14.0 would
     # be used and communication would not occur.
     # Thanks Mauricio for spotting this!
@@ -28,12 +51,11 @@ pyroscope:
     structuredConfig:
       self_profiling:
         disable_push: true
+      storage:
+        backend: filesystem
+  service:
+    port: 4040
 grafana:
-  env:
-    GF_INSTALL_PLUGINS: grafana-pyroscope-app
-    GF_AUTH_ANONYMOUS_ENABLED: "true"
-    GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
-    GF_AUTH_DISABLE_LOGIN_FORM: "true"
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -41,6 +63,11 @@ grafana:
         - uid: local-pyroscope
           type: grafana-pyroscope-datasource
           name: Pyroscope
-          url: http://gpu-observability-pyroscope.gpu-observability.svc.cluster.local:4040
+          url: http://gpu-observability-pyroscope-query-frontend.gpu-observability.svc.cluster.local:4040
           jsonData:
             keepCookies: [pyroscope_git_session]
+  env:
+    GF_INSTALL_PLUGINS: grafana-pyroscope-app
+    GF_AUTH_ANONYMOUS_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    GF_AUTH_DISABLE_LOGIN_FORM: "true"

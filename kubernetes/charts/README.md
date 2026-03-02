@@ -75,8 +75,7 @@ spec:
         value: "gpu"
         effect: "NoSchedule"
 EOF
-# Run the profile_cuda gadget, this is taken from Mauricio PR.
-$ kubectl-gadget run ttl.sh/5e252edfeaae4e3f5da8fdbe126dcd510df1a36a/profile_cuda:5222-merge -n default --otel-profiles-exporter=my-profiles-exporter --collect-ustack=true
+
 # Use the following to access grafana from http://localhost:3000
 $ kubectl -n gpu-observability port-forward svc/gpu-observability-grafana 3000:80
 ```

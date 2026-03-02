@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   annotations:
-    gadgetImage: "ttl.sh/5e252edfeaae4e3f5da8fdbe126dcd510df1a36a/profile_cuda:5222-merge"
+    gadgetImage: "profile_cuda:main"
   labels:
     name: profile-cuda
     type: gadget-instance

@@ -1,0 +1,20 @@
+apiVersion: v2
+name: gpu-observability
+description: Umbrella chart deploying Inspektor Gadget, OpenTelemetry Collector, Pyroscope, and Grafana
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: gadget
+    alias: inspektor-gadget
+    # 0.49.1 is not available in charts.
+    version: "0.49.0"
+    repository: "https://inspektor-gadget.github.io/charts"
+  - name: pyroscope
+    alias: pyroscope
+    version: "1.15.0"
+    repository: "https://grafana.github.io/helm-charts"
+  - name: grafana
+    alias: grafana
+    version: ">=0.0.0"
+    repository: "https://grafana.github.io/helm-charts"

@@ -45,48 +45,28 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-## 2. Run Pyroscope and & Grafana
+## 2. Run GPU Observability PoC
 
-The `pyroscope` folder contains a `docker-compose.yaml` file that will run both
-Pyroscope and Grafana with the necessary configurations to show the profiles on
-Grafana.
+Start the docker compose stack with grafana, pyroscope, prometheus, gadgets and cuda samples:
 
 ```bash
-cd pyroscope/docker
 docker compose up -d
 ```
 
-## 3. Build ig and profile_malloc gadget
+> Note: You can install docker compose on your machine following the instructions
+> [here](https://docs.docker.com/compose/install/linux/)
 
-- Build IG from `mauricio/profile-cuda` branch
-- Build the `profile_malloc` gadget from the same branch
+## 3. Check Pyroscope / Grafana
 
-## 4. Run profile_malloc gadget
-
-```bash
-sudo ig run profile_malloc --verify-image=false --config=./ig/config.yaml \
---otel-profiles-exporter=my-profiles-exporter \
---collect-ustack=true --host
-```
-
-## 5. Run a GPU workload
-
-One easy way is to run an ollama model following
-https://docs.ollama.com/quickstart:
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama run gemma3
-```
-
-## 6. Check Pyroscope / Grafana
-
-Open your browser and go to
-`http://<VM_IP>:3000/a/grafana-pyroscope-app/explore` to access the profiling data.
+Open your browser to access:
+- **Dashboard**: `http://<VM_IP>:3000/d/gmv2zv/gpu-observability` to view the GPU observability dashboard
+- **Profiles**: `http://<VM_IP>:3000/a/grafana-pyroscope-app/explore` to view profiling data
+- **Metrics**: `http://<VM_IP>:3000/explore` to view metrics from Prometheus
+- **Prometheus**: `http://<VM_IP>:9090` to access Prometheus UI directly
 
 NOTE: If you don't have direct access to the VM IP, you can create an SSH tunnel
 with:
 
 ```bash
-ssh -L 3000:localhost:3000 <user>@<VM_IP>
+ssh -L 3000:localhost:3000 -L 9090:localhost:9090 <user>@<VM_IP>
 ```

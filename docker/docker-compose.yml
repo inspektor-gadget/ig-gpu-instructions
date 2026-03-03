@@ -22,6 +22,52 @@ services:
     networks:
       - otel-net
 
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus:/etc/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - otel-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ig_profile_cuda:
+    image: ghcr.io/inspektor-gadget/ig:latest
+    command: run  profile_cuda:main --verify-image=false --config=/config.yaml --otel-profiles-exporter=my-profiles-exporter --collect-ustack=true --host
+    volumes:
+      - ./ig/config.yaml:/config.yaml
+      - /:/host
+    privileged: true
+    networks:
+      - otel-net
+
+  ig_cuda_memory_metrics:
+    image: ghcr.io/inspektor-gadget/ig:latest
+    command: run ghcr.io/mqasimsarfraz/gadget/cuda_memory_metrics:burak-cuda-mem_metrics --verify-image=false --config=/config.yaml --pull=always --otel-metrics-listen=true --host --otel-metrics-name=libcuda_mem_stats:libcuda_mem_stats,libcudart_mem_stats:libcudart_mem_stats
+    volumes:
+      - ./ig/config.yaml:/config.yaml
+      - /:/host
+    ports:
+      - "2224:2224"
+    privileged: true
+    networks:
+      - otel-net
+
+  cuda_sample_tf_mnist:
+    image: mcr.microsoft.com/azuredocs/samples-tf-mnist-demo:gpu
+    command: ["--max_steps", "500"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - otel-net
+
 networks:
   otel-net:
     driver: bridge

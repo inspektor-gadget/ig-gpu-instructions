@@ -5,5 +5,5 @@ operator:
         exporter: otlp-grpc
         compression: gzip
         # pyroscope
-        endpoint: "127.0.0.1:4040"
+        endpoint: "pyroscope:4040"
         insecure: true

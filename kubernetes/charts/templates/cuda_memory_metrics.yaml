@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    gadgetImage: "ghcr.io/mqasimsarfraz/gadget/cuda_memory_metrics:burak-cuda-mem_metric_0"
+  labels:
+    name: cuda-memory-metrics
+    type: gadget-instance
+  name: cuda-memory-metrics
+  namespace: gpu-observability
+immutable: true
+data:
+  operator.KubeManager.all-namespaces: "false"
+  operator.KubeManager.namespace: "default"
+  operator.otel-metrics.otel-metrics-name: "libcuda_mem_stats:libcuda_mem_stats,libcudart_mem_stats:libcudart_mem_stats"
+  operator.oci.annotate: "libcuda_mem_stats.k8s.podName:metrics.type=key"
+

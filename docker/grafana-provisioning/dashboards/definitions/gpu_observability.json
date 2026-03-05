@@ -73,7 +73,8 @@
                 "value": 0
               }
             ]
-          }
+          },
+          "unit": "bytes"
         },
         "overrides": []
       },
@@ -86,8 +87,8 @@
       "id": 3,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["last", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
@@ -107,7 +108,100 @@
           "refId": "A"
         }
       ],
-      "title": "CUDA Active Memory",
+      "title": "CUDA Active Memory by Process",
+      "description": "Currently allocated GPU memory per process (allocations - frees - implicit frees)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": ["last", "max"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(mem_alloc_bytes_total - mem_free_bytes_total - mem_implicit_free_bytes_total)",
+          "legendFormat": "Total CUDA Memory",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total CUDA Memory",
+      "description": "Total CUDA memory usage across all processes",
       "type": "timeseries"
     },
     {
@@ -167,21 +261,22 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "bytes"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 0
+        "x": 0,
+        "y": 8
       },
       "id": 4,
       "options": {
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": ["last", "max"],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
@@ -195,29 +290,20 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "topk(5,\n  mem_alloc_bytes_total - mem_free_bytes_total\n)",
+          "expr": "topk(5,\n  sum by (comm, pid) (mem_alloc_bytes_total - mem_free_bytes_total - mem_implicit_free_bytes_total)\n)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "",
-          "instant": false,
-          "range": true,
-          "refId": "B"
         }
       ],
       "title": "Top CUDA Processes",
+      "description": "Top 5 processes by GPU memory usage",
       "type": "timeseries"
     },
     {
       "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -271,14 +357,15 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "Bps"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
+        "x": 12,
         "y": 8
       },
       "id": 1,
@@ -311,6 +398,7 @@
         }
       ],
       "title": "CUDA Memory Allocation Rate",
+      "description": "Rate of GPU memory allocations per process",
       "type": "timeseries"
     },
     {
@@ -370,15 +458,16 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "Bps"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 8
+        "x": 0,
+        "y": 16
       },
       "id": 2,
       "options": {
@@ -405,6 +494,103 @@
         }
       ],
       "title": "CUDA Memory Free Rate",
+      "description": "Rate of explicit GPU memory frees per process",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.0",
+      "targets": [
+        {
+          "editorMode": "builder",
+          "expr": "sum by(comm) (rate(mem_implicit_free_bytes_total[5m]))",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CUDA Memory Implicit Free Rate",
+      "description": "Rate of implicit GPU memory frees per process (e.g., on process exit)",
       "type": "timeseries"
     },
     {
@@ -420,7 +606,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "id": 5,
       "options": {},
@@ -441,6 +627,7 @@
         }
       ],
       "title": "CUDA Memory Profiles",
+      "description": "Flamegraph showing GPU memory allocation call stacks",
       "type": "flamegraph"
     }
   ],
@@ -458,6 +645,6 @@
   "timezone": "browser",
   "title": "GPU Observability",
   "uid": "gmv2zv",
-  "version": 24,
+  "version": 25,
   "weekStart": ""
 }

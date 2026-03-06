@@ -728,7 +728,7 @@ grafana:
                     },
                     "groupBy": [],
                     "includeExemplars": false,
-                    "labelSelector": "",
+                    "labelSelector": "{k8s_podName=~\"${pod:regex}\"}",
                     "profileTypeId": "process_cpu:malloc:bytes::",
                     "queryType": "profile",
                     "refId": "A",

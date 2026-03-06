@@ -11,8 +11,8 @@ metadata:
   namespace: gpu-observability
 immutable: true
 data:
-  data:
   operator.KubeManager.all-namespaces: "false"
   operator.KubeManager.namespace: "default"
   operator.oci.ebpf.collect-ustack: "true"
   operator.otel-profiles.otel-profiles-exporter: "my-profiles-exporter"
+  operator.oci.annotate: "allocs.k8s.podName:profiles.sample-attribute=true"

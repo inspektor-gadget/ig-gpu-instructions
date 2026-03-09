@@ -3,7 +3,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   annotations:
-    gadgetImage: "profile_cuda:main"
+    #gadgetImage: "profile_cuda:main"
+    # one with symbols
+    gadgetImage: "ttl.sh/profile_cuda:foo"
   labels:
     name: profile-cuda
     type: gadget-instance
@@ -16,3 +18,5 @@ data:
   operator.oci.ebpf.collect-ustack: "true"
   operator.otel-profiles.otel-profiles-exporter: "my-profiles-exporter"
   operator.oci.annotate: "allocs.k8s.podName:profiles.sample-attribute=true"
+  operator.ustack.symbolizers: "otel-ebpf-profiler"
+  operator.oci.ebpf.collect-otel-stack: "true"

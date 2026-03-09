@@ -3,8 +3,18 @@ Test PyTorch application that allocates GPU memory in various patterns.
 Useful for testing CUDA memory profilers (e.g. Inspektor Gadget cuda_memory_metrics).
 
 Usage:
-    python main.py [--duration SECONDS] [--interval SECONDS] [--max-mb MB]
+    python main.py [--duration SECONDS] [--interval SECONDS] [--max-mb MB] [--patterns PATTERN ...]
+
+Available patterns: steady, incremental, sawtooth, mixed, matmul
+Default (no --patterns flag): runs all patterns.
+
+Examples:
+    python main.py --patterns steady sawtooth
+    python main.py --patterns incremental --max-mb 512 --duration 60
+    python main.py --patterns steady incremental sawtooth mixed matmul
 """
+
+AVAILABLE_PATTERNS = ["steady", "incremental", "sawtooth", "mixed", "matmul"]
 
 import argparse
 import time
@@ -127,7 +137,14 @@ def main():
                         help="Sleep interval between operations (seconds)")
     parser.add_argument("--max-mb", type=int, default=256,
                         help="Maximum single allocation size in MB")
+    parser.add_argument("--patterns", nargs="+", choices=AVAILABLE_PATTERNS,
+                        default=None, metavar="PATTERN",
+                        help=f"Allocation patterns to run (choose from: {', '.join(AVAILABLE_PATTERNS)}). "
+                             "Can specify multiple. Default: all patterns.")
     args = parser.parse_args()
+
+    patterns = args.patterns if args.patterns else AVAILABLE_PATTERNS
+    print(f"[info] Patterns to run: {', '.join(patterns)}")
 
     device = check_gpu()
     print_memory("baseline")
@@ -142,25 +159,32 @@ def main():
         print(f"{'=' * 60}")
 
         # 1. Steady allocation
-        steady_allocation(args.max_mb, hold_seconds=3)
+        if "steady" in patterns:
+            steady_allocation(args.max_mb, hold_seconds=10)
 
         # 2. Incremental staircase
-        step = max(8, args.max_mb // 8)
-        incremental_allocation(step_mb=step, steps=8, interval=args.interval)
+        if "incremental" in patterns:
+            step = max(8, args.max_mb // 8)
+            incremental_allocation(step_mb=step, steps=8, interval=args.interval)
 
         # 3. Sawtooth pattern
-        sawtooth_allocation(size_mb=args.max_mb // 2, cycles=5, interval=args.interval)
+        if "sawtooth" in patterns:
+            sawtooth_allocation(size_mb=args.max_mb // 2, cycles=5, interval=args.interval)
 
         # 4. Mixed sizes
-        mixed_sizes_allocation(interval=args.interval)
+        if "mixed" in patterns:
+            mixed_sizes_allocation(interval=args.interval)
 
         # 5. Compute workload
-        matmul_workload(size=2048, iterations=20, interval=args.interval / 2)
+        if "matmul" in patterns:
+            matmul_workload(size=2048, iterations=20, interval=args.interval / 2)
 
         # Final cleanup
         gc.collect()
         torch.cuda.empty_cache()
         print_memory("end of iteration")
+
+        time.sleep(1000)
 
         if args.duration <= 0:
             break

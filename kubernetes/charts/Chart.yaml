@@ -7,8 +7,8 @@ version: 0.1.0
 dependencies:
   - name: gadget
     alias: inspektor-gadget
-    version: "0.50.0"
-    repository: "https://inspektor-gadget.github.io/charts"
+    version: "1.0.0-dev"
+    repository: "oci://ghcr.io/inspektor-gadget/inspektor-gadget/charts"
   - name: pyroscope
     alias: pyroscope
     version: "1.15.0"

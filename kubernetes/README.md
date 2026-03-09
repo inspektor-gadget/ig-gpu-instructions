@@ -1,4 +1,8 @@
-Umbrella Helm chart to deploy Inspektor Gadget, Pyroscope and Grafana.
+## Advanced GPU Observability with Inspektor Gadget on Kubernetes
+
+This guide contains the instructions to deploy Inspektor Gadget and Pyroscope on
+a Kubernetes cluster to profile GPU workloads. The profiles are then visualized
+with Grafana.
 
 ### Prerequisities
 
@@ -17,9 +21,11 @@ This [script](https://github.com/eiffel-fl/azure-scripts/blob/f398eb017bf3/az-ak
 The following steps are needed to deploy the components:
 
 ```bash
+$ pushd charts
 $ helm repo add inspektor-gadget https://inspektor-gadget.github.io/charts
 $ helm repo add grafana https://grafana.github.io/helm-charts
 $ helm repo update
+$ helm dependency update
 $ helm upgrade --install gpu-observability . -n gpu-observability --reset-values --create-namespace -f values-micro-services.yaml -f values.yaml
 # Confirm everything is running
 $ kubectl get pod -n gpu-observability
@@ -40,42 +46,21 @@ gpu-observability-pyroscope-query-scheduler-654d8bc555-44jr9 1/1     Running   0
 gpu-observability-pyroscope-store-gateway-0                  1/1     Running   0          3m13s
 gpu-observability-pyroscope-store-gateway-1                  1/1     Running   0          3m13s
 gpu-observability-pyroscope-store-gateway-2                  1/1     Running   0          3m13s
+
+$ popd
 ```
 
 ### Testing
 
-The following steps will run a job accessing the GPU, Inspektor Gadget will then profile the memory operation from the CUDA library and will send the profiles to pyroscope. The profiles can then be displayed with Grafana.
+The following steps will run a job accessing the GPU, Inspektor Gadget will then
+profile the memory operation from the CUDA library and will send the profiles to
+pyroscope. The profiles can then be displayed with Grafana.
 
 ```bash
-$ kubectl apply -f - <<EOF
-apiVersion: batch/v1
-kind: Job
-metadata:
-  labels:
-    app: samples-tf-mnist-demo
-  name: samples-tf-mnist-demo
-spec:
-  template:
-    metadata:
-      labels:
-        app: samples-tf-mnist-demo
-    spec:
-      containers:
-      - name: samples-tf-mnist-demo
-        image: mcr.microsoft.com/azuredocs/samples-tf-mnist-demo:gpu
-        args: ["--max_steps", "500"]
-        imagePullPolicy: IfNotPresent
-        resources:
-          limits:
-           nvidia.com/gpu: 1
-      restartPolicy: OnFailure
-      tolerations:
-      - key: "sku"
-        operator: "Equal"
-        value: "gpu"
-        effect: "NoSchedule"
-EOF
+$ kubectl apply -f gpu-testload.yaml
+```
 
-# Use the following to access grafana from http://localhost:3000
-$ kubectl -n gpu-observability port-forward svc/gpu-observability-grafana 3000:80
+```
+# Use the following to access grafana from http://localhost:3001
+$ kubectl -n gpu-observability port-forward svc/gpu-observability-grafana 3001:80
 ```

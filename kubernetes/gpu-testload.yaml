@@ -13,7 +13,7 @@ spec:
       # Set to IfNotPresent when using a locally built image,
       # change to Always if pushing to a registry.
       imagePullPolicy: Always
-      args: ["--duration", "120", "--interval", "1", "--max-mb", "256"]
+      args: ["python", "main.py", "--duration", "120", "--interval", "1", "--max-mb", "256"]
       resources:
         limits:
           nvidia.com/gpu: "1"

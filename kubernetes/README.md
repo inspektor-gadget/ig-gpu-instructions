@@ -64,3 +64,12 @@ $ kubectl apply -f gpu-testload.yaml
 # Use the following to access grafana from http://localhost:3001
 $ kubectl -n gpu-observability port-forward svc/gpu-observability-grafana 3001:80
 ```
+
+You should be able to see our dashboard at: http://localhost:3001/d/gpu-observability/gpu-observability:
+
+
+![Memory consumption metrics](./images/dashboard1.png)
+
+![Memory allocation rate](./images/dashboard2.png)
+
+![Memory profiles](./images/dashboard3.png)

@@ -1,6 +1,13 @@
 inspektor-gadget:
+  image:
+    tag: "mauricio-profile-cuda-rebased"
+    repository: "ghcr.io/mauriciovasquezbernal/inspektor-gadget"
+  hostPID: true
+  nodeSelector:
+    # Only deploy on nodes with GPU.
+    accelerator: "nvidia"
   config:
-    daemonLogLevel: debug
+    daemonLogLevel: info
     gadgetNamespace: gpu-observability
     operator:
       otel-profiles:
@@ -15,9 +22,7 @@ inspektor-gadget:
         otel-metrics-listen-address: "0.0.0.0:2224"
       oci:
         verify-image: false
-  nodeSelector:
-    # Only deploy on nodes with GPU.
-    accelerator: "nvidia"
+
 pyroscope:
   alloy:
     enabled: false

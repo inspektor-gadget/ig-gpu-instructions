@@ -5,11 +5,8 @@ dependencies:
 - name: pyroscope
   repository: https://grafana.github.io/helm-charts
   version: 1.15.0
-- name: grafana
-  repository: https://grafana.github.io/helm-charts
-  version: 10.5.15
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
   version: 28.13.0
-digest: sha256:73c27cd88617e2c1385b7f9c0e0768b1501ab9874d00ac448da763af2a534bf2
-generated: "2026-03-09T17:15:49.987013768-05:00"
+digest: sha256:dba02c5bad8f2a1f53156df2c5898ddd8eeb21d911ecabc7aa809110d39834fd
+generated: "2026-03-18T09:24:05.018972509+02:00"

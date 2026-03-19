@@ -21,10 +21,13 @@ This [script](https://github.com/eiffel-fl/azure-scripts/blob/f398eb017bf3/az-ak
 The following steps are needed to deploy the components:
 
 ```bash
-$ bash deploy-stack -n your_resource_group -g named_wanted_for_grafana -k your_aks_cluster
+$ bash deploy-stack -n your_resource_group -g named_wanted_for_grafana -k your_aks_cluster -b named_wanted_for_blob_storage
 ...
-Everything is ready, you can now access Grafana from: https://...cus.grafana.azure.com.
-Do not forget to remove it with: az grafana delete -n named_wanted_for_grafana -g your_resource_group --no-wait.
+Everything is ready, you can now access Grafana from: https://...cus.grafana.azure.com
+Do not forget to clean resources with:
+az grafana delete -n named_wanted_for_grafana -g your_resource_group --no-wait.
+az storage account delete -n named_wanted_for_blob_storage -g your_resource_group --no-wait
+az identity delete -n pyroscope-id -g your_resource_group
 ```
 
 ### Testing

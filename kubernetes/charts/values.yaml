@@ -62,7 +62,7 @@ pyroscope:
       self_profiling:
         disable_push: true
       storage:
-        backend: filesystem
+        backend: azure
   service:
     port: 4040
 grafana:

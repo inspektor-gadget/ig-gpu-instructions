@@ -73,3 +73,5 @@ You should be able to see our dashboard at: http://localhost:3001/d/gpu-observab
 ![Memory allocation rate](./images/dashboard2.png)
 
 ![Memory profiles](./images/dashboard3.png)
+
+Please refer to the [How to Read Flamegraphs](./how-to-read-flamegraphs.md) guide for tips on how to analyze the profiles.

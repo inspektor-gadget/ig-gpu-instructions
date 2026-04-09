@@ -50,6 +50,14 @@ The key concepts for this use case:
   stack trace — the profiler can't name them
 - **`_allocate_kv_cache_tensors`** = vLLM's KV cache allocation
 
+> **Note on `<unknown>` in Pyroscope UI:** Pyroscope's flamegraph UI does not
+> render `<unknown>` as a labeled bar. Instead, it appears as the **gap between
+> the root `total` bar and the `<interpreter trampoline>` bar** — the wide
+> unlabeled area to the right of the flamegraph. The raw profile data (queried
+> via API) does include `<unknown>` as a named node with a self-allocation
+> value. When you see a large unlabeled gap in the UI, that's where native
+> CUDA allocations live.
+
 ## Profile 1: Unquantized Model (Healthy Baseline)
 
 **Command:**
@@ -129,11 +137,6 @@ that allocate memory through native CUDA calls, not through PyTorch. The weights
 are there — they're just invisible to Python-level profiling, hidden inside
 `<unknown>`.
 
-## Side-by-Side Comparison
-
-<!-- TODO: Add side-by-side screenshot showing both flamegraphs -->
-![Side-by-side comparison](images/side-by-side-comparison.png)
-
 ```
 Llama-2-7B (unquantized):
   <unknown>:      0.2 GB  ▏                                        0.24%
@@ -170,7 +173,6 @@ GPU KV cache size: 36,960 tokens
 
 **Flamegraph:**
 
-<!-- TODO: Add screenshot of Qwen3.5-35B FP8 flamegraph at 0.50 util from Pyroscope -->
 ![Qwen3.5-35B FP8 at 0.50 util](images/qwen35-fp8-0.50-flamegraph.png)
 
 **Breakdown:**
@@ -207,7 +209,6 @@ EngineCore failed to start.
 
 **Flamegraph:**
 
-<!-- TODO: Add screenshot of OOM flamegraph from Pyroscope -->
 ![OOM flamegraph](images/qwen35-fp8-oom-flamegraph.png)
 
 **Breakdown:**

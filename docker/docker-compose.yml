@@ -34,12 +34,13 @@ services:
       - "host.docker.internal:host-gateway"
 
   ig_profile_cuda:
-    image: ghcr.io/inspektor-gadget/ig:latest
-    command: run  profile_cuda:main --verify-image=false --config=/config.yaml --otel-profiles-exporter=my-profiles-exporter --collect-ustack=true --host
+    image: "ghcr.io/mqasimsarfraz/ig:mauricio-profile-cuda-rebased"
+    command: run ghcr.io/mauriciovasquezbernal/gadget/profile_cuda:symbols --verify-image=false --config=/config.yaml --otel-profiles-exporter=my-profiles-exporter --collect-ustack=true --host --collect-otel-stack --symbolizers=otel-ebpf-profiler --annotate="allocs.proc.comm:profiles.sample-attribute=true"
     volumes:
       - ./ig/config.yaml:/config.yaml
       - /:/host
     privileged: true
+    pid: host
     networks:
       - otel-net
 

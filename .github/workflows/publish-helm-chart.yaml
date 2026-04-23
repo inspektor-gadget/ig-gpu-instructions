@@ -1,0 +1,40 @@
+name: Publish Helm Chart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "kubernetes/charts/**"
+
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  CHART_PATH: kubernetes/charts
+  REGISTRY: ghcr.io
+  REGISTRY_PATH: ghcr.io/${{ github.repository }}/gpu-observability
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Helm
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login "${{ env.REGISTRY }}" -u "${{ github.actor }}" --password-stdin
+
+      - name: Package chart
+        run: helm package "${{ env.CHART_PATH }}" --destination .helm-packages
+
+      - name: Push chart to GHCR
+        run: |
+          for chart in .helm-packages/*.tgz; do
+            helm push "$chart" "oci://${{ env.REGISTRY_PATH }}"
+          done

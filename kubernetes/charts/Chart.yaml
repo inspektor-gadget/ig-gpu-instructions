@@ -13,10 +13,6 @@ dependencies:
     alias: pyroscope
     version: "1.15.0"
     repository: "https://grafana.github.io/helm-charts"
-  - name: grafana
-    alias: grafana
-    version: ">=0.0.0"
-    repository: "https://grafana.github.io/helm-charts"
   - name: prometheus
     alias: prometheus
     version: ">=0.0.0"

@@ -21,33 +21,10 @@ This [script](https://github.com/eiffel-fl/azure-scripts/blob/f398eb017bf3/az-ak
 The following steps are needed to deploy the components:
 
 ```bash
-$ pushd charts
-$ helm repo add inspektor-gadget https://inspektor-gadget.github.io/charts
-$ helm repo add grafana https://grafana.github.io/helm-charts
-$ helm repo update
-$ helm dependency update
-$ helm upgrade --install gpu-observability . -n gpu-observability --reset-values --create-namespace -f values-micro-services.yaml -f values.yaml
-# Confirm everything is running
-$ kubectl get pod -n gpu-observability
-NAME                                                         READY   STATUS    RESTARTS   AGE
-gadget-h48mv                                                 1/1     Running   0          3m22s
-gpu-observability-grafana-547c97b56-xnx6l                    1/1     Running   0          3m21s
-gpu-observability-pyroscope-compactor-0                      1/1     Running   0          3m15s
-gpu-observability-pyroscope-compactor-1                      1/1     Running   0          3m15s
-gpu-observability-pyroscope-compactor-2                      1/1     Running   0          3m15s
-gpu-observability-pyroscope-distributor-5b49c774f5-7vqzp     1/1     Running   0          3m19s
-gpu-observability-pyroscope-distributor-5b49c774f5-ldhhw     1/1     Running   0          3m19s
-gpu-observability-pyroscope-ingester-0                       1/1     Running   0          3m14s
-gpu-observability-pyroscope-ingester-1                       1/1     Running   0          3m14s
-gpu-observability-pyroscope-ingester-2                       1/1     Running   0          3m14s
-gpu-observability-pyroscope-querier-55b58bccfb-whscl         1/1     Running   0          3m18s
-gpu-observability-pyroscope-query-frontend-5958779869-tgfzr  1/1     Running   0          3m18s
-gpu-observability-pyroscope-query-scheduler-654d8bc555-44jr9 1/1     Running   0          3m17s
-gpu-observability-pyroscope-store-gateway-0                  1/1     Running   0          3m13s
-gpu-observability-pyroscope-store-gateway-1                  1/1     Running   0          3m13s
-gpu-observability-pyroscope-store-gateway-2                  1/1     Running   0          3m13s
-
-$ popd
+$ bash deploy-stack -n your_resource_group -g named_wanted_for_grafana -k your_aks_cluster
+...
+Everything is ready, you can now access Grafana from: https://...cus.grafana.azure.com.
+Do not forget to remove it with: az grafana delete -n named_wanted_for_grafana -g your_resource_group --no-wait.
 ```
 
 ### Testing
@@ -60,13 +37,7 @@ pyroscope. The profiles can then be displayed with Grafana.
 $ kubectl apply -f gpu-testload.yaml
 ```
 
-```
-# Use the following to access grafana from http://localhost:3001
-$ kubectl -n gpu-observability port-forward svc/gpu-observability-grafana 3001:80
-```
-
-You should be able to see our dashboard at: http://localhost:3001/d/gpu-observability/gpu-observability:
-
+You should be able to see our dashboard at the address printed by `deploy-stack.sh`:
 
 ![Memory consumption metrics](./images/dashboard1.png)
 

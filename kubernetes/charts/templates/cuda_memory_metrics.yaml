@@ -9,7 +9,6 @@ metadata:
     type: gadget-instance
   name: cuda-memory-metrics
   namespace: gpu-observability
-immutable: true
 data:
   operator.KubeManager.all-namespaces: "false"
   operator.KubeManager.namespace: "default"

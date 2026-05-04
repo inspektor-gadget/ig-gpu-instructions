@@ -22,7 +22,6 @@ The following steps are needed to deploy the components:
 
 ```bash
 $ pushd charts
-$ helm repo add inspektor-gadget https://inspektor-gadget.github.io/charts
 $ helm repo add grafana https://grafana.github.io/helm-charts
 $ helm repo update
 $ helm dependency update

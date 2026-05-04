@@ -1,7 +1,4 @@
 inspektor-gadget:
-  image:
-    tag: "mauricio-profile-cuda-rebased"
-    repository: "ghcr.io/mauriciovasquezbernal/inspektor-gadget"
   hostPID: true
   nodeSelector:
     # Only deploy on nodes with GPU.
@@ -20,9 +17,28 @@ inspektor-gadget:
       otel-metrics:
         otel-metrics-listen: true
         otel-metrics-listen-address: "0.0.0.0:2224"
-      oci:
-        verify-image: false
-
+    gadgetConfigMaps:
+      - name: gpu-memory-metrics
+        imageName: top_cuda_memory:v0.51.0
+        paramValues:
+          operator.KubeManager.all-namespaces: "false"
+          operator.KubeManager.namespace: "default"
+          operator.otel-metrics.otel-metrics-name: "libcuda_mem_stats:libcuda_mem_stats,libcudart_mem_stats:libcudart_mem_stats"
+          operator.oci.annotate: "libcuda_mem_stats.k8s.podName:metrics.type=key"
+        tags:
+          - gpu
+      - name: gpu-memory-profiles
+        imageName: profile_cuda:v0.52.0
+        paramValues:
+          operator.KubeManager.all-namespaces: "false"
+          operator.KubeManager.namespace: "default"
+          operator.otel-profiles.otel-profiles-exporter: "my-profiles-exporter"
+          operator.oci.ebpf.collect-otel-stack: "true"
+          operator.oci.ebpf.collect-ustack: "true"
+          operator.ustack.symbolizers: "otel-ebpf-profiler"
+          operator.oci.annotate: "allocs.k8s.podName:profiles.sample-attribute=true"
+        tags:
+          - gpu
 pyroscope:
   alloy:
     enabled: false
@@ -208,7 +224,7 @@ grafana:
                 "targets": [
                   {
                     "editorMode": "code",
-                    "expr": "sum by (k8s_podName) (\n  (mem_alloc_bytes_total{k8s_podName=~\"$pod\",host=\"0\"} - mem_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"} - mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"})\n)",
+                    "expr": "sum by (k8s_podName, pid) (\n  (mem_alloc_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"} - mem_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"} - mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"})\n)",
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
@@ -303,7 +319,7 @@ grafana:
                 "targets": [
                   {
                     "editorMode": "code",
-                    "expr": "topk(5,\n  sum by (k8s_podName, comm) (mem_alloc_bytes_total{k8s_podName=~\"$pod\",host=\"0\"} - mem_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"} - mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"})\n)",
+                    "expr": "topk(5,\n  sum by (k8s_podName, pid) (mem_alloc_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"} - mem_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"} - mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"})\n)",
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
@@ -407,7 +423,7 @@ grafana:
                       "uid": "prometheus"
                     },
                     "editorMode": "builder",
-                    "expr": "sum by(k8s_podName) (rate(mem_alloc_bytes_total{k8s_podName=~\"$pod\",host=\"0\"}[5m]))",
+                    "expr": "sum by(k8s_podName, pid) (rate(mem_alloc_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"}[5m]))",
                     "instant": false,
                     "legendFormat": "__auto",
                     "range": true,
@@ -509,7 +525,7 @@ grafana:
                 "targets": [
                   {
                     "editorMode": "builder",
-                    "expr": "sum by(k8s_podName) (rate(mem_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"}[5m]))",
+                    "expr": "sum by(k8s_podName, pid) (rate(mem_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"}[5m]))",
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
@@ -605,7 +621,7 @@ grafana:
                 "targets": [
                   {
                     "editorMode": "builder",
-                    "expr": "sum by(k8s_podName) (rate(mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host=\"0\"}[5m]))",
+                    "expr": "sum by(k8s_podName, pid) (rate(mem_implicit_free_bytes_total{k8s_podName=~\"$pod\",host_raw=\"0\"}[5m]))",
                     "legendFormat": "__auto",
                     "range": true,
                     "refId": "A"
@@ -697,7 +713,7 @@ grafana:
                 "targets": [
                   {
                     "editorMode": "code",
-                    "expr": "sum(mem_alloc_bytes_total{host=\"0\"} - mem_free_bytes_total{host=\"0\"} - mem_implicit_free_bytes_total{host=\"0\"})",
+                    "expr": "sum by (pid) (mem_alloc_bytes_total{host_raw=\"0\"} - mem_free_bytes_total{host_raw=\"0\"} - mem_implicit_free_bytes_total{host_raw=\"0\"})",
                     "legendFormat": "Total CUDA Memory",
                     "range": true,
                     "refId": "A"

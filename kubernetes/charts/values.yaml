@@ -8,14 +8,14 @@ inspektor-gadget:
     accelerator: "nvidia"
   config:
     daemonLogLevel: info
-    gadgetNamespace: gpu-observability
+    gadgetNamespace: gadget
     operator:
       otel-profiles:
         exporters:
           my-profiles-exporter:
             exporter: otlp-grpc
             compression: gzip
-            endpoint: gpu-observability-pyroscope-distributor.gpu-observability.svc.cluster.local:4040
+            endpoint: gadget-pyroscope-distributor.gadget.svc.cluster.local:4040
             insecure: true
       otel-metrics:
         otel-metrics-listen: true
@@ -163,14 +163,14 @@ grafana:
         - uid: local-pyroscope
           type: grafana-pyroscope-datasource
           name: Pyroscope
-          url: http://gpu-observability-pyroscope-query-frontend.gpu-observability.svc.cluster.local:4040
+          url: http://gadget-pyroscope-query-frontend.gadget.svc.cluster.local:4040
           jsonData:
             keepCookies: [pyroscope_git_session]
         - uid: prometheus
           name: Prometheus
           type: prometheus
           access: proxy
-          url: http://gpu-observability-prometheus-server.gpu-observability.svc.cluster.local:80
+          url: http://gadget-prometheus-server.gadget.svc.cluster.local:80
           isDefault: true
           editable: false
   env:
@@ -192,7 +192,7 @@ grafana:
             path: /var/lib/grafana/dashboards/default
   dashboards:
     default:
-      gpu-observability:
+      gadget:
         json: |
           {
             "annotations": {
@@ -876,7 +876,7 @@ grafana:
             "timepicker": {},
             "timezone": "browser",
             "title": "GPU Observability",
-            "uid": "gpu-observability",
+            "uid": "gadget",
             "version": 1,
             "weekStart": ""
           }
@@ -900,7 +900,7 @@ prometheus:
         - role: pod
           namespaces:
             names:
-              - gpu-observability
+              - gadget
       relabel_configs:
         # Only keep pods with label k8s-app=gadget
         - source_labels: [ __meta_kubernetes_pod_label_k8s_app ]

@@ -24,6 +24,7 @@ inspektor-gadget:
         verify-image: false
 
 pyroscope:
+  enabled: false
   alloy:
     enabled: false
   architecture:
@@ -154,6 +155,7 @@ pyroscope:
   service:
     port: 4040
 grafana:
+  enabled: false
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -879,6 +881,7 @@ grafana:
             "weekStart": ""
           }
 prometheus:
+  enabled: false
   server:
     global:
       scrape_interval: 15s

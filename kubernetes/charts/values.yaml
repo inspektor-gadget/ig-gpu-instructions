@@ -12,7 +12,7 @@ inspektor-gadget:
           my-profiles-exporter:
             exporter: otlp-grpc
             compression: gzip
-            endpoint: pyroscope-write.gadget.svc.cluster.local:4040
+            endpoint: pyroscope:4040
             insecure: true
       otel-metrics:
         otel-metrics-listen: true
@@ -22,13 +22,6 @@ inspektor-gadget:
 
 pyroscope:
   enabled: false
-  architecture:
-    # Set to true to run Pyroscope in microservices mode (multiple pods).
-    # The pyroscope-gateway.yaml template handles endpoint routing automatically.
-    microservices:
-      enabled: false
-    storage:
-      v2: true
   alloy:
     enabled: false
   minio:
@@ -56,14 +49,14 @@ grafana:
         - uid: local-pyroscope
           type: grafana-pyroscope-datasource
           name: Pyroscope
-          url: http://pyroscope-read.gadget.svc.cluster.local:4040
+          url: http://pyroscope:4040
           jsonData:
             keepCookies: [pyroscope_git_session]
         - uid: prometheus
           name: Prometheus
           type: prometheus
           access: proxy
-          url: http://gadget-prometheus-server.gadget.svc.cluster.local:80
+          url: http://prometheus-server:80
           isDefault: true
           editable: false
   env:

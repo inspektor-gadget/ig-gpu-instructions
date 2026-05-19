@@ -1,0 +1,15 @@
+{{- if .Values.pyroscope.enabled }}
+---
+# Stable Pyroscope endpoint, independent of the Helm release name.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyroscope
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: ExternalName
+  externalName: {{ .Release.Name }}-pyroscope.{{ .Release.Namespace }}.svc.cluster.local
+  ports:
+    - port: 4040
+      protocol: TCP
+{{- end }}

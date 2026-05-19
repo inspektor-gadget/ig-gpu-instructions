@@ -1,7 +1,4 @@
 inspektor-gadget:
-  image:
-    tag: "mauricio-profile-cuda-rebased"
-    repository: "ghcr.io/mauriciovasquezbernal/inspektor-gadget"
   hostPID: true
   nodeSelector:
     # Only deploy on nodes with GPU.

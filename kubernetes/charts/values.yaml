@@ -15,7 +15,7 @@ inspektor-gadget:
           my-profiles-exporter:
             exporter: otlp-grpc
             compression: gzip
-            endpoint: gadget-pyroscope-distributor.gadget.svc.cluster.local:4040
+            endpoint: pyroscope-write.gadget.svc.cluster.local:4040
             insecure: true
       otel-metrics:
         otel-metrics-listen: true
@@ -25,122 +25,18 @@ inspektor-gadget:
 
 pyroscope:
   enabled: false
-  alloy:
-    enabled: false
   architecture:
+    # Set to true to run Pyroscope in microservices mode (multiple pods).
+    # The pyroscope-gateway.yaml template handles endpoint routing automatically.
     microservices:
-      enabled: true
-    # Better than v1 for scaling.
+      enabled: false
     storage:
       v2: true
+  alloy:
+    enabled: false
   minio:
     enabled: false
   pyroscope:
-    extraArgs:
-      store-gateway.sharding-ring.replication-factor: "3"
-    # Components taken from:
-    # https://github.com/grafana/pyroscope/blob/318871de4599/operations/pyroscope/helm/pyroscope/values-micro-services.yaml
-    # Having split components helps scaling.
-    components:
-      querier:
-        kind: Deployment
-        # We only have one node for now.
-        replicaCount: 1
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            memory: 256Mi
-            cpu: 1
-      query-frontend:
-        kind: Deployment
-        replicaCount: 1
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            memory: 256Mi
-            cpu: 100m
-      query-scheduler:
-        kind: Deployment
-        replicaCount: 1
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            memory: 256Mi
-            cpu: 100m
-      distributor:
-        kind: Deployment
-        replicaCount: 2
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            memory: 256Mi
-            cpu: 500m
-      ingester:
-        kind: StatefulSet
-        replicaCount: 3
-        terminationGracePeriodSeconds: 600
-        resources:
-          limits:
-            memory: 16Gi
-          requests:
-            memory: 8Gi
-            cpu: 1
-      compactor:
-        kind: StatefulSet
-        replicaCount: 3
-        terminationGracePeriodSeconds: 1200
-        persistence:
-          enabled: false
-        resources:
-          limits:
-            memory: 16Gi
-          requests:
-            memory: 8Gi
-            cpu: 1
-      store-gateway:
-        kind: StatefulSet
-        replicaCount: 3
-        persistence:
-          # The store-gateway needs not need persistent storage, but we still run it as a StatefulSet
-          # This is to avoid having blocks of data being
-          enabled: false
-        resources:
-          limits:
-            memory: 16Gi
-          requests:
-            memory: 8Gi
-            cpu: 1
-        readinessProbe:
-          # The store gateway can be configured to wait on startup for ring stability to be reached before it becomes
-          # ready. See the `store-gateway.sharding-ring.wait-stability-min-duration` server argument for more information.
-          #
-          # Depending on this flag and the number of tenants + blocks that need to be synced on startup, pods can take
-          # some time to become ready. This value can be used to ensure Kubernetes waits long enough and reduce errors.
-          initialDelaySeconds: 60
-      tenant-settings:
-        kind: Deployment
-        # I do not think we need this.
-        replicaCount: 0
-        resources:
-          limits:
-            memory: 4Gi
-          requests:
-            memory: 16Mi
-            cpu: 0.1
-      ad-hoc-profiles:
-        kind: Deployment
-        # We only want to profile using Inspektor Gadget.
-        replicaCount: 0
-        resources:
-          limits:
-            memory: 4Gi
-          requests:
-            memory: 16Mi
-            cpu: 0.1
     # The image must be set here and not in upper level. Otherwise, 1.14.0 would
     # be used and communication would not occur.
     # Thanks Mauricio for spotting this!
@@ -163,7 +59,7 @@ grafana:
         - uid: local-pyroscope
           type: grafana-pyroscope-datasource
           name: Pyroscope
-          url: http://gadget-pyroscope-query-frontend.gadget.svc.cluster.local:4040
+          url: http://pyroscope-read.gadget.svc.cluster.local:4040
           jsonData:
             keepCookies: [pyroscope_git_session]
         - uid: prometheus

@@ -8,7 +8,7 @@ metadata:
     name: top-cuda-memory
     type: gadget-instance
   name: top-cuda-memory
-  namespace: gpu-observability
+  namespace: {{ .Release.Namespace }}
 data:
   operator.KubeManager.all-namespaces: "false"
   operator.KubeManager.namespace: "default"

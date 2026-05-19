@@ -8,7 +8,7 @@ metadata:
     name: profile-cuda
     type: gadget-instance
   name: profile-cuda
-  namespace: gpu-observability
+  namespace: {{ .Release.Namespace }}
 data:
   operator.KubeManager.all-namespaces: "false"
   operator.KubeManager.namespace: "default"
